@@ -15,7 +15,7 @@ for filename in os.listdir(folder):
             shutil.rmtree(file_path)
     except Exception as e:
         print('Failed to delete %s. Reason: %s' % (file_path, e))
-        
+   
 #count number of elements in input directory
 folder = directoryin
 filecounter = 0
