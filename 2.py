@@ -12,8 +12,9 @@ directoryin = "mask/"
 directoryout = "output/"
 directoryboundaries = "node/"
 directoryoriginal = "input/"
-cutoff = 241
-minregionsize = 50
+minregionsize = 50 #ignore detected fibres smaller than this many pixels
+framesize = 10 #ignore detected fibres that come within this many pixels of frames edge
+cutoff = 241 #minimum probability cutoff for how certain we require nerual network to be that pixel is muscle fibre (/255)
 
 #delete any existing contents of output directories
 folder = directoryout
@@ -63,7 +64,7 @@ for file in os.listdir(directoryin):
      drawing[:,:,1] = GT
      drawing[:,:,2] = GT
      for i, c in enumerate(contours):
-        if Rect[i][0] != 0 and Rect[i][1] != 0 and Rect[i][2] != img.shape[1] and Rect[i][3] != img.shape[0] and hierarchy[0,i,3] == -1:
+        if Rect[i][0] >= 10 and Rect[i][1] >= 10 and Rect[i][2] <= img.shape[1]-10 and Rect[i][3] <= img.shape[0]-10 and hierarchy[0,i,3] == -1:
             color = (128+randint(0,128), 128+randint(0,128), 128+randint(0,128))
             box = cv2.boxPoints(minRect[i])
             (x, y), (width, height), angle = minRect[i]
