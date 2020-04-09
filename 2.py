@@ -6,7 +6,6 @@ from skimage import morphology
 import sys
 import shutil
 from random import randint
-from data import *
 
 #paramters
 directoryin = "mask/"
@@ -44,8 +43,6 @@ for file in os.listdir(directoryin):
      filename = os.fsdecode(file)
      print(filename)
      img = imread(directoryin+filename)
-     print(img.shape)
-     sys.exit()
      img = cv2.bitwise_not(img)
      img = cv2.threshold(img, cutoff, 255, cv2.THRESH_BINARY)[1]
      img = img>0
