@@ -10,23 +10,6 @@ from tifffile import imread, imwrite
 import sys
 from random import randint
 
-Sky = [128,128,128]
-Building = [128,0,0]
-Pole = [192,192,128]
-Road = [128,64,128]
-Pavement = [60,40,222]
-Tree = [128,128,0]
-SignSymbol = [192,128,128]
-Fence = [64,64,128]
-Car = [64,0,128]
-Pedestrian = [64,64,0]
-Bicyclist = [0,128,192]
-Unlabelled = [0,0,0]
-
-COLOR_DICT = np.array([Sky, Building, Pole, Road, Pavement,
-                          Tree, SignSymbol, Fence, Car, Pedestrian, Bicyclist, Unlabelled])
-
-
 def adjustData(img,mask,flag_multi_class,num_class):
     if(np.max(img) > 1):
         img = img / np.max(img)
@@ -40,11 +23,7 @@ def adjustData(img,mask,flag_multi_class,num_class):
 def trainGenerator(batch_size,train_path,image_folder,mask_folder,aug_dict,image_color_mode = "grayscale",
                     mask_color_mode = "grayscale",image_save_prefix  = "image",mask_save_prefix  = "mask",
                     flag_multi_class = False,num_class = 2,save_to_dir = None,target_size = (256,256),seed = 1):
-    '''
-    can generate image and mask at the same time
-    use the same seed for image_datagen and mask_datagen to ensure the transformation for image and mask is the same
-    if you want to visualize the results of generator, set save_to_dir = "your path"
-    '''
+    
     image_datagen = ImageDataGenerator(**aug_dict)
     mask_datagen = ImageDataGenerator(**aug_dict)
     image_generator = image_datagen.flow_from_directory(
@@ -79,36 +58,14 @@ def testGenerator(test_path,num_image = 30,target_size = (256,256),flag_multi_cl
     for i in range(num_image):
         img = io.imread(os.path.join(test_path,"%d.tif"%i),as_gray = as_gray)
         img = img / np.max(img)
-        img1 = img[0:512,0:512]
-        img2 = img[0:512,752:1264]
-        img3 = img[0:512,376:888]
-        img4 = img[169:681,0:512]
-        img5 = img[169:681,752:1264]
-        img6 = img[169:681,376:888]
-        img1 = trans.resize(img1,target_size)
-        img1 = np.reshape(img1,img1.shape+(1,)) if (not flag_multi_class) else img1
-        img1 = np.reshape(img1,(1,)+img1.shape)
-        img2 = trans.resize(img2,target_size)
-        img2 = np.reshape(img2,img2.shape+(1,)) if (not flag_multi_class) else img2
-        img2 = np.reshape(img2,(1,)+img2.shape)
-        img3 = trans.resize(img3,target_size)
-        img3 = np.reshape(img3,img3.shape+(1,)) if (not flag_multi_class) else img3
-        img3 = np.reshape(img3,(1,)+img3.shape)
-        img4 = trans.resize(img4,target_size)
-        img4 = np.reshape(img4,img4.shape+(1,)) if (not flag_multi_class) else img4
-        img4 = np.reshape(img4,(1,)+img4.shape)
-        img5 = trans.resize(img5,target_size)
-        img5 = np.reshape(img5,img5.shape+(1,)) if (not flag_multi_class) else img5
-        img5 = np.reshape(img5,(1,)+img5.shape)
-        img6 = trans.resize(img6,target_size)
-        img6 = np.reshape(img6,img6.shape+(1,)) if (not flag_multi_class) else img6
-        img6 = np.reshape(img6,(1,)+img6.shape)
-        yield img1
-        yield img2
-        yield img3
-        yield img4
-        yield img5
-        yield img6
+        curimg = np.zeros(shape=img.shape,dtype = np.float32)
+        patches = getpatches(img.shape[0],img.shape[1])
+        for j in range(len(patches)):
+            ranges = patches[j]
+            curimg = img[ranges[0]:ranges[2],ranges[1]:ranges[3]]
+            curimg = np.reshape(curimg,curimg.shape+(1,))
+            curimg = np.reshape(curimg,(1,)+curimg.shape)
+            yield curimg
 
 def geneTrainNpy(image_path,mask_path,flag_multi_class = False,num_class = 2,image_prefix = "image",mask_prefix = "mask",image_as_gray = True,mask_as_gray = True):
     image_name_arr = glob.glob(os.path.join(image_path,"%s*.png"%image_prefix))
@@ -136,29 +93,44 @@ def labelVisualize(num_class,color_dict,img):
 
 
 
-def saveResult(save_path,npyfile,flag_multi_class = False,num_class = 2):
+def saveResult(save_path,npyfile,flag_multi_class = False,num_class = 2,dims = (512,512)):
     counter= 0
+    patches = getpatches(dims[0],dims[1])
+    nopatch = len(patches)
+    img = np.zeros(shape=dims,dtype=np.float32)
     for i,item in enumerate(npyfile):
-        img = np.zeros(shape=(681,1264),dtype=np.float32)
-        if i%6 == 0:
-            img1 = item[:,:,0]
-        if i%6 == 1:
-            img2 = item[:,:,0]
-        if i%6 == 2:
-            img3 = item[:,:,0]
-        if i%6 == 3:
-            img4 = item[:,:,0]
-        if i%6 == 4:
-            img5 = item[:,:,0]
-        if i%6 == 5:
-            img6 = item[:,:,0]
-            img[0:512,0:462] = img1[:,0:462]
-            img[0:512,802:1264] = img2[:,50:512]
-            img[0:512,426:838] = img3[:,50:462]
-            img[219:681,0:512] = img4[50:512,:]
-            img[219:681,802:1264] = img5[50:512:,50:512]
-            img[219:681,426:838] = img6[50:512,50:462]
+        currentpatch = i % nopatch
+        ranges = patches[currentpatch]
+        offsetxlower = 0
+        offsetylower = 0
+        offsetxhigher = 0
+        offsetyhigher = 0
+        if ranges[0] != 0:
+            offsetxlower = 50
+        if ranges[1] != 0:
+            offsetylower = 50
+        if ranges[2] != dims[0]:
+            offsetxhigher = -50
+        if ranges[3] != dims[1]:
+            offsetyhigher = -50
+        if currentpatch != nopatch-1:
+            img[ranges[0]+offsetxlower:ranges[2]+offsetxhigher,ranges[1]+offsetylower:ranges[3]+offsetyhigher] = item[offsetxlower:512+offsetxhigher,offsetylower:512+offsetyhigher,0]
+        else:
+            img[ranges[0]+offsetxlower:ranges[2]+offsetxhigher,ranges[1]+offsetylower:ranges[3]+offsetyhigher] = item[offsetxlower:512+offsetxhigher,offsetylower:512+offsetyhigher,0]
             img = 255*img
-            img = img.astype(np.uint8)
-            io.imsave(os.path.join(save_path,"%d_mask.tif"%counter),img)
+            io.imsave(os.path.join(save_path,"%d_mask.tif"%counter),img.astype(np.uint8))
             counter+=1
+
+def getpatches(x,y):
+    assert x >= 512
+    assert y >= 512
+    numberofxtackons = divmod(x-512,400)[0]+2
+    numberofytackons = divmod(y-512,400)[0]+2
+    patches = list()
+    for i in range(numberofxtackons):
+        for j in range(numberofytackons):
+            upperx = min(400*i+512,x)
+            uppery = min(400*j+512,y)
+            patches.append((upperx-512,uppery-512,upperx,uppery))
+    return patches
+    

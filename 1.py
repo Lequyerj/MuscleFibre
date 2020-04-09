@@ -1,5 +1,6 @@
 from model import *
 from data import *
+from tifffile import imread, imwrite
 directoryin = "input/"
 directoryout = "mask/"
 
@@ -21,10 +22,11 @@ filecounter = 0
 for file in os.listdir(directoryin):
     filecounter+=1
     
-
+img = imread(directoryin+'0.tif')
+shapey = img.shape
 numimg = filecounter
 testGene = testGenerator(directoryin,num_image = numimg,target_size = (512,512))
 model = neuralnet()
 model.load_weights("weights.hdf5")
 results = model.predict_generator(testGene, numimg*6, verbose=1)
-saveResult(directoryout,results)
+saveResult(directoryout,results,dims = shapey)
