@@ -24,9 +24,10 @@ for file in os.listdir(directoryin):
     
 img = imread(directoryin+'0.tif')
 shapey = img.shape
+nopatches = len(getpatches(shapey[0],shapey[1]))
 numimg = filecounter
 testGene = testGenerator(directoryin,num_image = numimg,target_size = (512,512))
 model = neuralnet()
 model.load_weights("weights.hdf5")
-results = model.predict_generator(testGene, numimg*6, verbose=1)
+results = model.predict_generator(testGene, numimg*nopatches, verbose=1)
 saveResult(directoryout,results,dims = shapey)
