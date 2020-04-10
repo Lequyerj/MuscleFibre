@@ -58,7 +58,8 @@ for file in os.listdir(directoryin):
         Rect[i] = (a,b,a+w,b+h)
      drawing = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
      GT = imread(directoryoriginal+filename[0]+'.tif')
-     GT = cv2.cvtColor(GT, cv2.COLOR_BGR2GRAY)
+     if len(GT.shape)>2:
+         GT = cv2.cvtColor(GT, cv2.COLOR_BGR2GRAY)
      GT = GT/2
      GT = GT.astype(np.uint8)
      drawing[:,:,0] = GT
