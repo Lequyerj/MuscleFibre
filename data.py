@@ -97,7 +97,7 @@ def saveResult(save_path,npyfile,flag_multi_class = False,num_class = 2,dims = (
     counter= 0
     patches = getpatches(dims[0],dims[1])
     nopatch = len(patches)
-    img = np.zeros(shape=dims,dtype=np.float32)
+    img = np.zeros(shape=(dims[0],dims[1]),dtype=np.float32)
     for i,item in enumerate(npyfile):
         currentpatch = i % nopatch
         ranges = patches[currentpatch]
