@@ -14,7 +14,7 @@ directoryboundaries = "node/"
 directoryoriginal = "input/"
 minregionsize = 50 #ignore detected fibres smaller than this many pixels
 framesize = 10 #ignore detected fibres that come within this many pixels of frames edge
-cutoff = 241 #minimum probability cutoff for how certain we require nerual network to be that pixel is muscle fibre (/255)
+cutoff = 244 #minimum probability cutoff for how certain we require nerual network to be that pixel is muscle fibre (/255)
 
 #delete any existing contents of output directories
 folder = directoryout
