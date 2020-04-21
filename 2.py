@@ -14,7 +14,7 @@ directoryboundaries = "node/"
 directoryoriginal = "input/"
 minregionsize = 50 #ignore detected fibres smaller than this many pixels
 framesize = 10 #ignore detected fibres that come within this many pixels of frames edge
-cutoff = 244 #minimum probability cutoff for how certain we require nerual network to be that pixel is muscle fibre (/255)
+cutoff = 216 #minimum probability cutoff for how certain we require nerual network to be that pixel is muscle fibre (/255)
 
 #delete any existing contents of output directories
 folder = directoryout
@@ -73,13 +73,15 @@ for file in os.listdir(directoryin):
             feret = min(width,height)
             area = cv2.contourArea(c)
             (p,q), radius = cv2.minEnclosingCircle(c)
+            #circularity = area/(3.141592654*radius*radius)
+            contours[i] = cv2.convexHull(contours[i])
             cv2.drawContours(drawing, contours, i, color)
-            file = open(directoryout+str(filename[0])+".csv", "a")
+            file = open(directoryout+str(filename[:-9])+".csv", "a")
             file.write(str(area)+","+str(feret)+"\n")    
-            #cv2.putText(drawing, str('%.2f' % feret), (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1, cv2.LINE_AA)
+            #cv2.putText(drawing, str('%.2f' % circularity), (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1, cv2.LINE_AA)
             box = np.intp(box)
             #cv2.drawContours(drawing, [box], 0, color)              
-     imwrite(directoryboundaries+str(filename[0])+"_boundaries",drawing)     
+     imwrite(directoryboundaries+str(filename[:-9])+"_boundaries",drawing)     
         
 
  
