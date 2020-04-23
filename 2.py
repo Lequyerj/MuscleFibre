@@ -80,7 +80,7 @@ for file in os.listdir(directoryin):
                 cv2.drawContours(drawing, contours, i, color)
                 file = open(directoryout+str(filename[:-9])+".csv", "a")
                 file.write(str(area)+","+str(feret)+"\n")    
-                #cv2.putText(drawing, str('%.2f' % convexity), (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1, cv2.LINE_AA)
+                #cv2.putText(drawing, str('%.2f' % feret), (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1, cv2.LINE_AA)
                 box = np.intp(box)
                 #cv2.drawContours(drawing, [box], 0, color)              
      imwrite(directoryboundaries+str(filename[:-9])+"_boundaries",drawing)     
