@@ -11,11 +11,12 @@ from random import randint
 directoryin = "mask/"
 directoryout = "output/"
 directoryboundaries = "node/"
+directoryferet = "feret/"
 directoryoriginal = "input/"
 minregionsize = 50 #ignore detected fibres smaller than this many pixels
 framesize = 10 #ignore detected fibres that come within this many pixels of frames edge
-cutoff = 249 #minimum probability cutoff for how certain we require nerual network to be that pixel is muscle fibre (/255)
-minconvexity = 0.65 #chucks bizzarely shaped fibres that are probably erroneous detection, set to 0 to turn off this filter
+cutoff = 247 #minimum probability cutoff for how certain we require nerual network to be that pixel is muscle fibre (/255)
+minconvexity = 0 #chucks bizzarely shaped fibres that are probably erroneous detection, set to 0 to turn off this filter
 
 #delete any existing contents of output directories
 folder = directoryout
@@ -29,6 +30,16 @@ for filename in os.listdir(folder):
     except Exception as e:
         print('Failed to delete %s. Reason: %s' % (file_path, e))
 folder = directoryboundaries
+for filename in os.listdir(folder):
+    file_path = os.path.join(folder, filename)
+    try:
+        if os.path.isfile(file_path) or os.path.islink(file_path):
+            os.unlink(file_path)
+        elif os.path.isdir(file_path):
+            shutil.rmtree(file_path)
+    except Exception as e:
+        print('Failed to delete %s. Reason: %s' % (file_path, e))
+folder = directoryferet
 for filename in os.listdir(folder):
     file_path = os.path.join(folder, filename)
     try:
@@ -80,10 +91,30 @@ for file in os.listdir(directoryin):
                 cv2.drawContours(drawing, contours, i, color)
                 file = open(directoryout+str(filename[:-9])+".csv", "a")
                 file.write(str(area)+","+str(feret)+"\n")    
-                #cv2.putText(drawing, str('%.2f' % feret), (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1, cv2.LINE_AA)
                 box = np.intp(box)
                 #cv2.drawContours(drawing, [box], 0, color)              
-     imwrite(directoryboundaries+str(filename[:-9])+"_boundaries",drawing)     
+     imwrite(directoryboundaries+str(filename[:-9])+"_boundaries.tif",drawing)
+     drawing[:,:,0] = GT
+     drawing[:,:,1] = GT
+     drawing[:,:,2] = GT
+     for i, c in enumerate(contours):
+        if Rect[i][0] >= 10 and Rect[i][1] >= 10 and Rect[i][2] <= img.shape[1]-10 and Rect[i][3] <= img.shape[0]-10 and hierarchy[0,i,3] == -1:
+            color = (128+randint(0,128), 128+randint(0,128), 128+randint(0,128))
+            box = cv2.boxPoints(minRect[i])
+            (x, y), (width, height), angle = minRect[i]
+            feret = min(width,height)
+            area = cv2.contourArea(c)
+            (p,q), radius = cv2.minEnclosingCircle(c)
+            area2 = cv2.contourArea(cv2.convexHull(contours[i]))
+            convexity = area/area2
+            if convexity >= minconvexity:
+                cv2.drawContours(drawing, contours, i, color)
+                file = open(directoryout+str(filename[:-9])+".csv", "a")
+                file.write(str(area)+","+str(feret)+"\n")    
+                cv2.putText(drawing, str(int(feret)), (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1, cv2.LINE_AA)
+                box = np.intp(box)
+                #cv2.drawContours(drawing, [box], 0, color)   
+     imwrite(directoryferet+str(filename[:-9])+"_feret.tif",drawing)
         
 
  
