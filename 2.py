@@ -10,26 +10,17 @@ from random import randint
 #paramters
 directoryin = "mask/"
 directoryout = "output/"
-directoryboundaries = "node/"
+directoryboundaries = "contours/"
 directoryferet = "feret/"
 directoryoriginal = "input/"
 minregionsize = 50 #ignore detected fibres smaller than this many pixels
+minholesize = 100 #fill in holes smaller than this many pixels
 framesize = 10 #ignore detected fibres that come within this many pixels of frames edge
-cutoff = 247 #minimum probability cutoff for how certain we require nerual network to be that pixel is muscle fibre (/255)
+cutoff = 128 #minimum probability cutoff for how certain we require nerual network to be that pixel is muscle fibre (/255)
 minconvexity = 0 #chucks bizzarely shaped fibres that are probably erroneous detection, set to 0 to turn off this filter
 
 #delete any existing contents of output directories
 folder = directoryout
-for filename in os.listdir(folder):
-    file_path = os.path.join(folder, filename)
-    try:
-        if os.path.isfile(file_path) or os.path.islink(file_path):
-            os.unlink(file_path)
-        elif os.path.isdir(file_path):
-            shutil.rmtree(file_path)
-    except Exception as e:
-        print('Failed to delete %s. Reason: %s' % (file_path, e))
-folder = directoryboundaries
 for filename in os.listdir(folder):
     file_path = os.path.join(folder, filename)
     try:
@@ -54,12 +45,16 @@ for filename in os.listdir(folder):
 for file in os.listdir(directoryin):
      filename = os.fsdecode(file)
      print(filename)
+     manualmask = imread(directoryboundaries+filename[:-4]+'.png')
+     manualmask = cv2.cvtColor(manualmask, cv2.COLOR_BGR2GRAY)
+     manualmask = cv2.threshold(manualmask, 254, 255, cv2.THRESH_BINARY)[1]
      img = imread(directoryin+filename)
+     img = np.maximum(img,manualmask)
      img = cv2.bitwise_not(img)
      img = cv2.threshold(img, cutoff, 255, cv2.THRESH_BINARY)[1]
      img = img>0
      img = morphology.remove_small_objects(img, min_size=minregionsize)
-     img = morphology.remove_small_holes(img, min_size=minregionsize)
+     img = morphology.remove_small_holes(img, area_threshold=minholesize)
      img = 255*img.astype(np.uint8)
      contours, hierarchy = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
      minRect = [None]*len(contours)
@@ -69,7 +64,7 @@ for file in os.listdir(directoryin):
         a,b,w,h = cv2.boundingRect(c)
         Rect[i] = (a,b,a+w,b+h)
      drawing = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
-     GT = imread(directoryoriginal+filename[:-9]+'.tif')
+     GT = imread(directoryoriginal+filename)
      if len(GT.shape)>2:
          GT = cv2.cvtColor(GT, cv2.COLOR_BGR2GRAY)
      GT = GT/2
@@ -89,11 +84,11 @@ for file in os.listdir(directoryin):
             convexity = area/area2
             if convexity >= minconvexity:
                 cv2.drawContours(drawing, contours, i, color)
-                file = open(directoryout+str(filename[:-9])+".csv", "a")
+                file = open(directoryout+str(filename[:-4])+".csv", "a")
                 file.write(str(area)+","+str(feret)+"\n")    
                 box = np.intp(box)
                 #cv2.drawContours(drawing, [box], 0, color)              
-     imwrite(directoryboundaries+str(filename[:-9])+"_boundaries.tif",drawing)
+     imwrite(directoryboundaries+str(filename)[:-4]+'.png',drawing)
      drawing[:,:,0] = GT
      drawing[:,:,1] = GT
      drawing[:,:,2] = GT
@@ -109,12 +104,12 @@ for file in os.listdir(directoryin):
             convexity = area/area2
             if convexity >= minconvexity:
                 cv2.drawContours(drawing, contours, i, color)
-                file = open(directoryout+str(filename[:-9])+".csv", "a")
+                file = open(directoryout+str(filename[:-4])+".csv", "a")
                 file.write(str(area)+","+str(feret)+"\n")    
                 cv2.putText(drawing, str(int(feret)), (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1, cv2.LINE_AA)
                 box = np.intp(box)
                 #cv2.drawContours(drawing, [box], 0, color)   
-     imwrite(directoryferet+str(filename[:-9])+"_feret.tif",drawing)
+     imwrite(directoryferet+str(filename[:-4])+".tif",drawing)
         
 
  
