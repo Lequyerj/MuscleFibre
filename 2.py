@@ -42,14 +42,21 @@ for filename in os.listdir(folder):
         print('Failed to delete %s. Reason: %s' % (file_path, e))
 
 #go to work
-for file in os.listdir(directoryin):
+for file in os.listdir(directoryoriginal):
      filename = os.fsdecode(file)
      print(filename)
-     manualmask = imread(directoryboundaries+filename[:-4]+'.png')
+     manualmask = imread(directoryboundaries+filename[:-4]+'.tif')
      manualmask = cv2.cvtColor(manualmask, cv2.COLOR_BGR2GRAY)
      manualmask = cv2.threshold(manualmask, 254, 255, cv2.THRESH_BINARY)[1]
+     manualerase = imread(directoryboundaries+filename[:-4]+'.tif')
+     manualerase = cv2.cvtColor(manualerase, cv2.COLOR_BGR2GRAY)
+     manualerase = 255-manualerase
+     manualerase = cv2.threshold(manualerase, 254, 255, cv2.THRESH_BINARY)[1]
+     manualerase = 255-manualerase
      img = imread(directoryin+filename)
      img = np.maximum(img,manualmask)
+     
+     img = np.minimum(img,manualerase)
      img = cv2.bitwise_not(img)
      img = cv2.threshold(img, cutoff, 255, cv2.THRESH_BINARY)[1]
      img = img>0
@@ -64,9 +71,9 @@ for file in os.listdir(directoryin):
         a,b,w,h = cv2.boundingRect(c)
         Rect[i] = (a,b,a+w,b+h)
      drawing = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
-     GT = imread(directoryoriginal+filename)
+     GT = cv2.imread(directoryoriginal+filename)
      if len(GT.shape)>2:
-         GT = cv2.cvtColor(GT, cv2.COLOR_BGR2GRAY)
+         GT = GT[:,:,1]
      GT = GT/2
      GT = GT.astype(np.uint8)
      drawing[:,:,0] = GT
@@ -88,7 +95,7 @@ for file in os.listdir(directoryin):
                 file.write(str(area)+","+str(feret)+"\n")    
                 box = np.intp(box)
                 #cv2.drawContours(drawing, [box], 0, color)              
-     imwrite(directoryboundaries+str(filename)[:-4]+'.png',drawing)
+     imwrite(directoryboundaries+str(filename)[:-4]+'.tif',drawing)
      drawing[:,:,0] = GT
      drawing[:,:,1] = GT
      drawing[:,:,2] = GT

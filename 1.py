@@ -90,7 +90,8 @@ class MyTestSet(utils_data.Dataset):
   def __getitem__(self, index):
       
       file_name =  self.mask_file_list[index]
-      img = imread('input/'+file_name)
+      img = cv2.imread('input/'+file_name)
+      img = img[:,:,1]
       img -= np.amin(img)
       img = img/np.amax(img)
       img = img.astype(np.float32)
@@ -116,9 +117,8 @@ net.to(device)
 
 with torch.no_grad():
     for i, data in enumerate(testloader, 0):
-        print(i)
         image, file_name, shipshape = data[0].to(device), data[1], data[2]
-        
+        print(file_name)
         image = net(image)
         #image = torch.cat((torch.cat((image[0,0,:,:],image[1,0,:,:]),dim=1),torch.cat((image[2,0,:,:],image[3,0,:,:]),dim=1)),dim=0)
         out = image.cpu().detach().numpy()
@@ -173,7 +173,6 @@ for filename in os.listdir(folder):
 #go to work
 for file in os.listdir(directoryoriginal):
      filename = os.fsdecode(file)
-     print(filename)
      img = imread(directoryin+filename)
      img = cv2.bitwise_not(img)
      img = cv2.threshold(img, cutoff, 255, cv2.THRESH_BINARY)[1]
@@ -189,9 +188,9 @@ for file in os.listdir(directoryoriginal):
         a,b,w,h = cv2.boundingRect(c)
         Rect[i] = (a,b,a+w,b+h)
      drawing = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
-     GT = imread(directoryoriginal+filename)
+     GT = cv2.imread(directoryoriginal+filename)
      if len(GT.shape)>2:
-         GT = cv2.cvtColor(GT, cv2.COLOR_BGR2GRAY)
+         GT = GT[:,:,1]
      GT = GT/2
      GT = GT.astype(np.uint8)
      drawing[:,:,0] = GT
@@ -213,7 +212,7 @@ for file in os.listdir(directoryoriginal):
                 file.write(str(area)+","+str(feret)+"\n")    
                 box = np.intp(box)
                 #cv2.drawContours(drawing, [box], 0, color)              
-     imwrite(directoryboundaries+str(filename)[:-4]+'.png',drawing)
+     imwrite(directoryboundaries+str(filename)[:-4]+'.tif',drawing)
      drawing[:,:,0] = GT
      drawing[:,:,1] = GT
      drawing[:,:,2] = GT
