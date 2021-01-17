@@ -1,4 +1,4 @@
-# MuscleFibre Detactor
+# MuscleFibre Detector
 
 # Installation
 If you don't already have anaconda, install it by following instrctions at this link: https://docs.anaconda.com/anaconda/install/.
@@ -13,9 +13,9 @@ conda install -c pytorch pytorch
 conda install -c conda-forge tifffile
 conda install -c conda-forge opencv
 ```
+Wihtin this GitHub repository, go to releases on the right to download the weights.pth file. Place this file in the master directory.
 
 # Usage
-
 Place all images you want to segment in the input folder. Run the fully automated pass, by navigating to the master directory and running the following command:
 ```python
 python 1.py
