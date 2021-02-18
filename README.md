@@ -22,6 +22,6 @@ python 1.py
 ```
 Navigate to contours folder to view initial segmentation and correct using imageJ where necessary (draw white where you want detected contours to be erased and black where you want new contours to be drawn). Then run the manual correction script, by navigating to the master directory and running the following command:
 ```python
-python 1.py
+python 2.py
 ```
 In the feret folder you will find an image of the contours with the feret diamteter included. In the output folder you will find a 2 column matrix, column 1 contains the area of the detected fibre in pixels and column 2 contains the feret diameter. Each row corresponds to a different detected fibre.
