@@ -82,7 +82,7 @@ for file in os.listdir(directoryoriginal):
      newmask = 255*np.ones(drawing.shape,dtype=np.uint8)
      for i, c in enumerate(contours):
         if Rect[i][0] >= 10 and Rect[i][1] >= 10 and Rect[i][2] <= img.shape[1]-10 and Rect[i][3] <= img.shape[0]-10 and hierarchy[0,i,3] == -1:
-            color = (17, 138, 178)
+            color = (128+randint(0,128), 128+randint(0,128), 128+randint(0,128))
             box = cv2.boxPoints(minRect[i])
             (x, y), (width, height), angle = minRect[i]
             feret = min(width,height)
@@ -106,7 +106,7 @@ for file in os.listdir(directoryoriginal):
      drawing[:,:,2] = GT
      for i, c in enumerate(contours):
         if Rect[i][0] >= 10 and Rect[i][1] >= 10 and Rect[i][2] <= img.shape[1]-10 and Rect[i][3] <= img.shape[0]-10 and hierarchy[0,i,3] == -1:
-            color = (17, 138, 178)
+            color = (128+randint(0,128), 128+randint(0,128), 128+randint(0,128))
             box = cv2.boxPoints(minRect[i])
             (x, y), (width, height), angle = minRect[i]
             feret = min(width,height)
