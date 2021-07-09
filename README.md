@@ -13,7 +13,7 @@ conda install -c pytorch pytorch
 conda install -c conda-forge tifffile
 conda install -c conda-forge opencv
 ```
-Wihtin this GitHub repository, go to releases on the right to download the weights.pth file. Place this file in the master directory.
+Now, within this GitHub repository, go to releases on the right to download the weights.pth file. Place this file in the master directory.
 
 # Usage
 Place all images you want to segment in the input folder. Run the fully automated pass, by navigating to the master directory and running the following command:
