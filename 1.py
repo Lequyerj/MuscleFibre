@@ -13,6 +13,23 @@ import shutil
 from random import randint
 
 
+def clearfolder(folder):
+    for filename in os.listdir(folder):
+        file_path = os.path.join(folder, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+clearfolder("mask/")
+clearfolder("output/")
+clearfolder("contours/")
+clearfolder("feret/")
+
+
 class TwoCon(nn.Module):
 
     def __init__(self, in_channels, out_channels):
@@ -126,6 +143,8 @@ with torch.no_grad():
         out = 255*out[:,:,:shipshape[0],:shipshape[1]]
         out = out.astype(np.uint8)
         imwrite('mask/'+file_name[:-4]+'.tif', out, imagej=True)
+
+
 
 #parameters for contour detection
 directoryin = "mask/"
