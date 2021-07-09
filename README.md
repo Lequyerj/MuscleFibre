@@ -3,6 +3,8 @@
 # Installation
 If you don't already have anaconda, install it by following instrctions at this link: https://docs.anaconda.com/anaconda/install/.
 
+You will also need to have ImageJ installed: https://imagej.nih.gov/ij/download.html.
+
 Open Anaconda Prompt and enter the following commands to create a new conda environment and install the required packages:
 
 ```python
