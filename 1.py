@@ -79,7 +79,7 @@ class Net(nn.Module):
         x = self.upconv2(x,x3)
         x = self.upconv3(x,x2)
         x = self.upconv4(x,x1)
-        x = F.sigmoid(self.conv6(x))
+        x = torch.sigmoid(self.conv6(x))
         return x
 class MyTestSet(utils_data.Dataset):
   def __init__(self, transform=None):
