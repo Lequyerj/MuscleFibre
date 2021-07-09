@@ -18,12 +18,13 @@ conda install -c conda-forge opencv
 Now, within this GitHub repository, go to releases on the right to download the weights.pth file. Place this file in the master directory.
 
 # Usage
-Place all images you want to segment in the input folder. Run the fully automated pass, by navigating to the master directory, opening Anaconda Prompt and running the following commands:
+Place all images you want to segment in the input folder. Run the fully automated pass by opening Anaconda Prompt and running the following commands:
 ```python
+cd <masterdirectoryname>
 conda activate muscles
 python 1.py
 ```
-Navigate to contours folder to view initial segmentation and correct using imageJ where necessary (draw white where you want detected contours to be erased and black where you want new contours to be drawn). Then run the manual correction script, by running the following command:
+Replacing "masterdirectoryname" with the full path to the directory conataining 1.py and 2.py. Navigate to contours folder to view initial segmentation and correct using ImageJ where necessary (draw white where you want detected contours to be erased and black where you want new contours to be drawn). Then run the manual correction script, by running the following command:
 ```python
 python 2.py
 ```
