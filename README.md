@@ -3,7 +3,7 @@
 # Installation
 If you don't already have anaconda, install it by following instrctions at this link: https://docs.anaconda.com/anaconda/install/.
 
-Create a new conda environment and install the required packages:
+Open Anaconda Prompt and enter the following commands to create a new conda environment and install the required packages:
 
 ```python
 conda create --name muscles
