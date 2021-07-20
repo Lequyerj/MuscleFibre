@@ -100,7 +100,7 @@ class Net(nn.Module):
         return x
 class MyTestSet(utils_data.Dataset):
   def __init__(self, transform=None):
-      self.mask_file_list = [f for f in os.listdir('input/')]
+      self.mask_file_list = [f for f in os.listdir('input/') if f[0] != '.']
       
   def __len__(self):
       return len(self.mask_file_list)
@@ -192,74 +192,77 @@ for filename in os.listdir(folder):
 
 #go to work
 for file in os.listdir(directoryoriginal):
-     filename = os.fsdecode(file)
-     img = imread(directoryin+filename[:-4]+'.tif')
-     img = cv2.bitwise_not(img)
-     img = cv2.threshold(img, cutoff, 255, cv2.THRESH_BINARY)[1]
-     img = img>0
-     img = morphology.remove_small_objects(img, min_size=minregionsize)
-     img = morphology.remove_small_holes(img, area_threshold=minholesize)
-     img = 255*img.astype(np.uint8)
-     contours, hierarchy = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-     minRect = [None]*len(contours)
-     Rect = [None]*len(contours)
-     for i, c in enumerate(contours):
-        minRect[i] = cv2.minAreaRect(c)
-        a,b,w,h = cv2.boundingRect(c)
-        Rect[i] = (a,b,a+w,b+h)
-     drawing = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
-     GTOG = cv2.imread(directoryoriginal+filename)
-     if len(GTOG.shape)>2:
-         GT = GTOG[:,:,1]
-     GT = GT/2
-     GT = GT.astype(np.uint8)
-     drawing[:,:,0] = GT
-     drawing[:,:,1] = GT
-     drawing[:,:,2] = GT
-     newmask = 255*np.ones(drawing.shape,dtype=np.uint8)
-     for i, c in enumerate(contours):
-        if Rect[i][0] >= 10 and Rect[i][1] >= 10 and Rect[i][2] <= img.shape[1]-10 and Rect[i][3] <= img.shape[0]-10 and hierarchy[0,i,3] == -1:
-            color = (128+randint(0,128), 128+randint(0,128), 128+randint(0,128))
-            box = cv2.boxPoints(minRect[i])
-            (x, y), (width, height), angle = minRect[i]
-            feret = min(width,height)
-            area = cv2.contourArea(c)
-            (p,q), radius = cv2.minEnclosingCircle(c)
-            area2 = cv2.contourArea(cv2.convexHull(contours[i]))
-            convexity = area/area2
-            if convexity >= minconvexity:
-                cv2.drawContours(drawing, contours, i, color)
-                cv2.drawContours(newmask, contours, i, (0,0,0),-1)
-                file = open(directoryout+str(filename[:-4])+".csv", "a")
-                file.write(str(area)+","+str(feret)+"\n")    
-                box = np.intp(box)
-                #cv2.drawContours(drawing, [box], 0, color)              
-     manualedit = np.zeros((2,GTOG.shape[0],GTOG.shape[1],GTOG.shape[2]),dtype=np.uint8)
-     manualedit[0] = drawing
-     manualedit[1] = GTOG
-     imwrite(directoryboundaries+str(filename)[:-4]+'.tif',manualedit, imagej=True)
-     imwrite(directoryin+str(filename)[:-4]+'.tif',newmask[:,:,0])
-     drawing[:,:,0] = GT
-     drawing[:,:,1] = GT
-     drawing[:,:,2] = GT
-     for i, c in enumerate(contours):
-        if Rect[i][0] >= 10 and Rect[i][1] >= 10 and Rect[i][2] <= img.shape[1]-10 and Rect[i][3] <= img.shape[0]-10 and hierarchy[0,i,3] == -1:
-            color = (128+randint(0,128), 128+randint(0,128), 128+randint(0,128))
-            box = cv2.boxPoints(minRect[i])
-            (x, y), (width, height), angle = minRect[i]
-            feret = min(width,height)
-            area = cv2.contourArea(c)
-            (p,q), radius = cv2.minEnclosingCircle(c)
-            area2 = cv2.contourArea(cv2.convexHull(contours[i]))
-            convexity = area/area2
-            if convexity >= minconvexity:
-                cv2.drawContours(drawing, contours, i, color)
-                file = open(directoryout+str(filename[:-4])+".csv", "a")
-                file.write(str(area)+","+str(feret)+"\n")    
-                cv2.putText(drawing, str(int(feret)), (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1, cv2.LINE_AA)
-                box = np.intp(box)
-                #cv2.drawContours(drawing, [box], 0, color)   
-     imwrite(directoryferet+str(filename[:-4])+".tif",drawing)
-        
+    if file[0] != '.':
+
+
+        filename = os.fsdecode(file)
+        img = imread(directoryin+filename[:-4]+'.tif')
+        img = cv2.bitwise_not(img)
+        img = cv2.threshold(img, cutoff, 255, cv2.THRESH_BINARY)[1]
+        img = img>0
+        img = morphology.remove_small_objects(img, min_size=minregionsize)
+        img = morphology.remove_small_holes(img, area_threshold=minholesize)
+        img = 255*img.astype(np.uint8)
+        contours, hierarchy = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        minRect = [None]*len(contours)
+        Rect = [None]*len(contours)
+        for i, c in enumerate(contours):
+           minRect[i] = cv2.minAreaRect(c)
+           a,b,w,h = cv2.boundingRect(c)
+           Rect[i] = (a,b,a+w,b+h)
+        drawing = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
+        GTOG = cv2.imread(directoryoriginal+filename)
+        if len(GTOG.shape)>2:
+            GT = GTOG[:,:,1]
+        GT = GT/2
+        GT = GT.astype(np.uint8)
+        drawing[:,:,0] = GT
+        drawing[:,:,1] = GT
+        drawing[:,:,2] = GT
+        newmask = 255*np.ones(drawing.shape,dtype=np.uint8)
+        for i, c in enumerate(contours):
+           if Rect[i][0] >= 10 and Rect[i][1] >= 10 and Rect[i][2] <= img.shape[1]-10 and Rect[i][3] <= img.shape[0]-10 and hierarchy[0,i,3] == -1:
+               color = (128+randint(0,128), 128+randint(0,128), 128+randint(0,128))
+               box = cv2.boxPoints(minRect[i])
+               (x, y), (width, height), angle = minRect[i]
+               feret = min(width,height)
+               area = cv2.contourArea(c)
+               (p,q), radius = cv2.minEnclosingCircle(c)
+               area2 = cv2.contourArea(cv2.convexHull(contours[i]))
+               convexity = area/area2
+               if convexity >= minconvexity:
+                   cv2.drawContours(drawing, contours, i, color)
+                   cv2.drawContours(newmask, contours, i, (0,0,0),-1)
+                   file = open(directoryout+str(filename[:-4])+".csv", "a")
+                   file.write(str(area)+","+str(feret)+"\n")    
+                   box = np.intp(box)
+                   #cv2.drawContours(drawing, [box], 0, color)              
+        manualedit = np.zeros((2,GTOG.shape[0],GTOG.shape[1],GTOG.shape[2]),dtype=np.uint8)
+        manualedit[0] = drawing
+        manualedit[1] = GTOG
+        imwrite(directoryboundaries+str(filename)[:-4]+'.tif',manualedit, imagej=True)
+        imwrite(directoryin+str(filename)[:-4]+'.tif',newmask[:,:,0])
+        drawing[:,:,0] = GT
+        drawing[:,:,1] = GT
+        drawing[:,:,2] = GT
+        for i, c in enumerate(contours):
+           if Rect[i][0] >= 10 and Rect[i][1] >= 10 and Rect[i][2] <= img.shape[1]-10 and Rect[i][3] <= img.shape[0]-10 and hierarchy[0,i,3] == -1:
+               color = (128+randint(0,128), 128+randint(0,128), 128+randint(0,128))
+               box = cv2.boxPoints(minRect[i])
+               (x, y), (width, height), angle = minRect[i]
+               feret = min(width,height)
+               area = cv2.contourArea(c)
+               (p,q), radius = cv2.minEnclosingCircle(c)
+               area2 = cv2.contourArea(cv2.convexHull(contours[i]))
+               convexity = area/area2
+               if convexity >= minconvexity:
+                   cv2.drawContours(drawing, contours, i, color)
+                   file = open(directoryout+str(filename[:-4])+".csv", "a")
+                   file.write(str(area)+","+str(feret)+"\n")    
+                   cv2.putText(drawing, str(int(feret)), (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1, cv2.LINE_AA)
+                   box = np.intp(box)
+                   #cv2.drawContours(drawing, [box], 0, color)   
+        imwrite(directoryferet+str(filename[:-4])+".tif",drawing)
+           
 
  
